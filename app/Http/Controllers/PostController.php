@@ -13,18 +13,36 @@ class PostController extends Controller
         $posts = Post::with('category')
 
             ->when($request->search, function ($query) use ($request) {
-                $query->where('title', 'like', '%' . $request->search . '%')
-                    ->orWhere('content', 'like', '%' . $request->search . '%')
-                    ->orWhereHas('category', function ($q) use ($request) {
-                        $q->where('name', 'like', '%' . $request->search . '%');
-                    });
+
+                $query->where(function ($q) use ($request) {
+
+                    $q->where('title', 'like', '%' . $request->search . '%')
+                        ->orWhere('content', 'like', '%' . $request->search . '%')
+                        ->orWhere('status', 'like', '%' . $request->search . '%')
+                        ->orWhereHas('category', function ($cat) use ($request) {
+                            $cat->where('name', 'like', '%' . $request->search . '%');
+                        });
+                });
             })
 
-            ->oldest()
+            ->when($request->status, function ($query) use ($request) {
+                $query->where('status', $request->status);
+            })
+
+            ->orderBy('id', 'asc')
             ->paginate(3)
             ->withQueryString();
 
-        return view('posts.index', compact('posts'));
+        $publishedCount = Post::where('status', 'Published')->count();
+        $draftCount = Post::where('status', 'Draft')->count();
+        $archivedCount = Post::where('status', 'Archived')->count();
+
+        return view('posts.index', compact(
+            'posts',
+            'publishedCount',
+            'draftCount',
+            'archivedCount'
+        ));
     }
 
     public function create()
@@ -38,14 +56,27 @@ class PostController extends Controller
     {
         $request->validate([
             'category_id' => 'required',
-            'title' => 'required',
-            'content' => 'required',
+            'title'       => 'required',
+            'content'     => 'required',
+            'status'      => 'required',
         ]);
 
-        Post::create($request->all());
+        Post::create([
+            'category_id' => $request->category_id,
+            'title'       => $request->title,
+            'content'     => $request->content,
+            'status'      => $request->status,
+        ]);
 
         return redirect()
             ->route('posts.index')
             ->with('success', 'Post created successfully.');
+    }
+
+    public function show(Post $post)
+    {
+        $post->load('category');
+
+        return view('posts.show', compact('post'));
     }
 }
