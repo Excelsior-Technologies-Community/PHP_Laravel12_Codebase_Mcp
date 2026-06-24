@@ -90,9 +90,17 @@
                 <p class="text-muted">Laravel 12 + MCP Demo</p>
             </div>
 
-            <a href="{{ route('posts.create') }}" class="btn btn-primary">
-                + Create Post
-            </a>
+            <div class="d-flex gap-2">
+
+                <a href="{{ route('categories.index') }}" class="btn btn-success">
+                    Categories
+                </a>
+
+                <a href="{{ route('posts.create') }}" class="btn btn-primary">
+                    + Create Post
+                </a>
+
+            </div>
         </div>
 
         <!-- Stats -->
@@ -114,6 +122,31 @@
 
         </div>
 
+        <div class="row mb-4">
+
+            <div class="col-md-4">
+                <div class="stats-card bg-success">
+                    <h5>Published Posts</h5>
+                    <h2>{{ $publishedCount }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stats-card bg-warning">
+                    <h5>Draft Posts</h5>
+                    <h2>{{ $draftCount }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4">
+                <div class="stats-card bg-danger">
+                    <h5>Archived Posts</h5>
+                    <h2>{{ $archivedCount }}</h2>
+                </div>
+            </div>
+
+        </div>
+
         <!-- 🔍 SEARCH BOX -->
         <div class="card card-custom mb-4">
             <div class="card-body">
@@ -122,9 +155,37 @@
 
                     <div class="row">
 
-                        <div class="col-md-10">
-                            <input type="text" name="search" value="{{ request('search') }}" class="form-control"
-                                placeholder="Search by title, content or category...">
+                        <div class="col-md-7">
+                            <input type="text"
+                                name="search"
+                                value="{{ request('search') }}"
+                                class="form-control"
+                                placeholder="Search by title, content, category or status...">
+                        </div>
+
+                        <div class="col-md-3">
+                            <select name="status" class="form-select">
+
+                                <option value="">
+                                    All Status
+                                </option>
+
+                                <option value="Draft"
+                                    {{ request('status') == 'Draft' ? 'selected' : '' }}>
+                                    Draft
+                                </option>
+
+                                <option value="Published"
+                                    {{ request('status') == 'Published' ? 'selected' : '' }}>
+                                    Published
+                                </option>
+
+                                <option value="Archived"
+                                    {{ request('status') == 'Archived' ? 'selected' : '' }}>
+                                    Archived
+                                </option>
+
+                            </select>
                         </div>
 
                         <div class="col-md-2">
@@ -157,7 +218,9 @@
                             <th>Category</th>
                             <th>Title</th>
                             <th>Content</th>
+                            <th>Status</th>
                             <th>Date</th>
+                            <th>Action</th>
                         </tr>
                     </thead>
 
@@ -165,29 +228,58 @@
 
                         @forelse($posts as $post)
 
-                            <tr>
-                                <td>{{ $post->id }}</td>
+                        <tr>
+                            <td>{{ $post->id }}</td>
 
-                                <td>
-                                    <span class="badge-category">
-                                        {{ $post->category->name }}
-                                    </span>
-                                </td>
+                            <td>
+                                <span class="badge-category">
+                                    {{ $post->category->name }}
+                                </span>
+                            </td>
 
-                                <td>{{ $post->title }}</td>
+                            <td>{{ $post->title }}</td>
 
-                                <td>{{ Str::limit($post->content, 80) }}</td>
+                            <td>{{ Str::limit($post->content, 80) }}</td>
 
-                                <td>{{ $post->created_at->format('d M Y') }}</td>
-                            </tr>
+                            <td>
+                                @if($post->status == 'Published')
+
+                                <span class="badge bg-success">
+                                    Published
+                                </span>
+
+                                @elseif($post->status == 'Draft')
+
+                                <span class="badge bg-warning text-dark">
+                                    Draft
+                                </span>
+
+                                @else
+
+                                <span class="badge bg-danger">
+                                    Archived
+                                </span>
+
+                                @endif
+                            </td>
+
+                            <td>{{ $post->created_at->format('d M Y') }}</td>
+
+                            <td>
+                                <a href="{{ route('posts.show', $post->id) }}"
+                                    class="btn btn-info btn-sm">
+                                    View
+                                </a>
+                            </td>
+                        </tr>
 
                         @empty
 
-                            <tr>
-                                <td colspan="5" class="text-center text-muted py-4">
-                                    No Posts Found
-                                </td>
-                            </tr>
+                        <tr>
+                            <td colspan="7" class="text-center text-muted py-4">
+                                No Posts Found
+                            </td>
+                        </tr>
 
                         @endforelse
 
@@ -195,7 +287,7 @@
 
                 </table>
 
-                <!-- 🔢 NUMBER ONLY PAGINATION -->
+                <!-- NUMBER ONLY PAGINATION -->
                 <div class="mt-4">
                     {{ $posts->onEachSide(0)->links('pagination::bootstrap-5') }}
                 </div>

@@ -54,9 +54,9 @@
 
                             @foreach($categories as $category)
 
-                                <option value="{{ $category->id }}">
-                                    {{ $category->name }}
-                                </option>
+                            <option value="{{ $category->id }}">
+                                {{ $category->name }}
+                            </option>
 
                             @endforeach
 
@@ -78,6 +78,26 @@
 
                         <textarea name="content" rows="6" class="form-control"
                             placeholder="Enter Post Content"></textarea>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+
+                        <select name="status" class="form-select">
+
+                            <option value="Draft">
+                                Draft
+                            </option>
+
+                            <option value="Published">
+                                Published
+                            </option>
+
+                            <option value="Archived">
+                                Archived
+                            </option>
+
+                        </select>
                     </div>
 
                     <div class="d-flex gap-2">
