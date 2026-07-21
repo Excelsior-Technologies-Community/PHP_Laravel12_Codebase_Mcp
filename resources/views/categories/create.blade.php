@@ -5,15 +5,35 @@
     <title>Create Category</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #f4f7fc;
+        }
+
+        .form-card {
+            max-width: 600px;
+            margin: 50px auto;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, .08);
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            font-weight: 600;
+        }
+    </style>
 </head>
 
 <body>
 
-<div class="container mt-5">
+<div class="container">
 
-    <div class="card">
+    <div class="card form-card">
 
-        <div class="card-header">
+        <div class="card-header py-3">
             Create Category
         </div>
 
@@ -32,14 +52,18 @@
                            placeholder="Enter Category Name">
                 </div>
 
-                <button class="btn btn-success">
-                    Save Category
-                </button>
+                <div class="d-flex gap-2">
 
-                <a href="{{ route('categories.index') }}"
-                   class="btn btn-secondary">
-                    Back
-                </a>
+                    <a href="{{ route('categories.index') }}"
+                       class="btn btn-secondary">
+                        Back
+                    </a>
+
+                    <button type="submit" class="btn btn-success">
+                        Save Category
+                    </button>
+
+                </div>
 
             </form>
 

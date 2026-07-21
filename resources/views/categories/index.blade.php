@@ -113,6 +113,7 @@
                         <th>#</th>
                         <th>Category Name</th>
                         <th>Created Date</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
 
@@ -120,7 +121,7 @@
 
                 @forelse($categories as $category)
 
-                    <tr>
+                    <tr id="category-row-{{ $category->id }}">
 
                         <td>
                             {{ $category->id }}
@@ -138,13 +139,25 @@
                             {{ $category->created_at->format('d M Y') }}
                         </td>
 
+                        <td>
+                            <button class="btn btn-warning btn-sm"
+                                onclick="editCategory({{ $category->id }}, '{{ $category->name }}')">
+                                Edit
+                            </button>
+
+                            <button class="btn btn-danger btn-sm"
+                                onclick="deleteCategory({{ $category->id }})">
+                                Delete
+                            </button>
+                        </td>
+
                     </tr>
 
                 @empty
 
                     <tr>
 
-                        <td colspan="3" class="text-center text-muted py-4">
+                        <td colspan="4" class="text-center text-muted py-4">
                             No Categories Found
                         </td>
 
@@ -156,7 +169,6 @@
 
             </table>
 
-
             {{ $categories->onEachSide(1)->links('pagination::bootstrap-5') }}
 
         </div>
@@ -164,6 +176,122 @@
     </div>
 
 </div>
+
+<!-- Edit Category Modal -->
+<div class="modal fade" id="editCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="edit-category-modal-body">
+                Loading...
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal fade" id="deleteCategoryModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to delete this category? Posts in this category will be uncategorized.
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <form id="delete-category-form" method="POST" class="d-inline">
+                    @csrf
+                    @method('DELETE')
+                    <button type="submit" class="btn btn-danger">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+    function editCategory(id, name) {
+        const modalBody = document.getElementById('edit-category-modal-body');
+        const modal = new bootstrap.Modal(document.getElementById('editCategoryModal'));
+
+        modalBody.innerHTML = `
+            <form id="edit-category-form" class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">Category Name</label>
+                    <input type="text" name="name" id="edit-category-name" class="form-control" value="${name}">
+                    <input type="hidden" name="_method" value="PUT">
+                    <input type="hidden" name="_token" value="{{ csrf_token() }}">
+                </div>
+                <div class="col-12">
+                    <div class="d-flex gap-2">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-success">Update Category</button>
+                    </div>
+                </div>
+            </form>
+        `;
+
+        modal.show();
+
+        const form = modalBody.querySelector('form');
+        form.onsubmit = function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch(`/categories/${id}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        location.reload();
+                    }
+                });
+        };
+    }
+
+    function deleteCategory(id) {
+        const form = document.getElementById('delete-category-form');
+        form.action = `/categories/${id}`;
+        const modal = new bootstrap.Modal(document.getElementById('deleteCategoryModal'));
+        modal.show();
+
+        form.onsubmit = function(e) {
+            e.preventDefault();
+
+            const formData = new FormData(form);
+
+            fetch(`/categories/${id}`, {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        const row = document.getElementById(`category-row-${id}`);
+                        if (row) row.remove();
+                        bootstrap.Modal.getInstance(document.getElementById('deleteCategoryModal')).hide();
+                    }
+                });
+        };
+    }
+</script>
 
 </body>
 
