@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Create Post</title>
+    <title>Edit Post</title>
 
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
@@ -36,14 +36,15 @@
         <div class="card form-card">
 
             <div class="card-header py-3">
-                Create New Post
+                Edit Post
             </div>
 
             <div class="card-body">
 
-                <form method="POST" action="{{ route('posts.store') }}">
+                <form method="POST" action="{{ route('posts.update', $post->id) }}">
 
                     @csrf
+                    @method('PUT')
 
                     <div class="mb-3">
                         <label class="form-label">
@@ -54,7 +55,7 @@
 
                             @foreach($categories as $category)
 
-                            <option value="{{ $category->id }}">
+                            <option value="{{ $category->id }}" {{ $post->category_id == $category->id ? 'selected' : '' }}>
                                 {{ $category->name }}
                             </option>
 
@@ -68,7 +69,7 @@
                             Post Title
                         </label>
 
-                        <input type="text" name="title" class="form-control" placeholder="Enter Post Title">
+                        <input type="text" name="title" class="form-control" value="{{ $post->title }}">
                     </div>
 
                     <div class="mb-3">
@@ -76,8 +77,7 @@
                             Content
                         </label>
 
-                        <textarea name="content" rows="6" class="form-control"
-                            placeholder="Enter Post Content"></textarea>
+                        <textarea name="content" rows="6" class="form-control">{{ $post->content }}</textarea>
                     </div>
 
                     <div class="mb-3">
@@ -85,17 +85,12 @@
 
                         <select name="status" class="form-select">
 
-                            <option value="Draft">
-                                Draft
+                            <option value="Draft" {{ $post->status == 'Draft' ? 'selected' : '' }}>Draft</option>
+
+                            <option value="Published" {{ $post->status == 'Published' ? 'selected' : '' }}>Published
                             </option>
 
-                            <option value="Published">
-                                Published
-                            </option>
-
-                            <option value="Archived">
-                                Archived
-                            </option>
+                            <option value="Archived" {{ $post->status == 'Archived' ? 'selected' : '' }}>Archived</option>
 
                         </select>
                     </div>
@@ -107,15 +102,13 @@
 
                             @foreach($tags as $tag)
 
-                            <option value="{{ $tag->id }}">
+                            <option value="{{ $tag->id }}" {{ $post->tags->contains($tag->id) ? 'selected' : '' }}>
                                 {{ $tag->name }}
                             </option>
 
                             @endforeach
 
                         </select>
-
-                        <small class="text-muted">Hold Ctrl (Windows) or Cmd (Mac) to select multiple tags.</small>
                     </div>
 
                     <div class="d-flex gap-2">
@@ -125,7 +118,7 @@
                         </a>
 
                         <button type="submit" class="btn btn-success">
-                            Save Post
+                            Update Post
                         </button>
 
                     </div>
